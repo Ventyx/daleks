@@ -32,15 +32,6 @@ class Player :
 docteur = Player(0, 0, 4, 0, 0)
 
 while True:
-    playerInput = getch()    
-
-    if (playerInput == b'w'):
-        docteur.move(0,1)
-    elif (playerInput == b's'):
-        docteur.move(0,-1)
-    elif (playerInput == b'a'):
-        docteur.move(-1,0)
-    elif (playerInput == b'd'):
-        docteur.move(1,0)
+    
 
     print(docteur.getPos())

@@ -1,7 +1,34 @@
 #### Fichier Main
 from msvcrt import getch
 import os
+from msvcrt import getch
 
+# Le joueur
+class Player :
+    # Constructeur
+    def __init__(self, posX, posY, vies, teleporteur, zappeur):
+        self.posX = posX
+        self.posY = posY
+        self.vies = vies
+        self.teleporteur = teleporteur
+        self.zappeur = zappeur
+
+    # Déplacer le joueur
+    def move(self, moveX, moveY):
+
+        self.posX += moveX
+        if (self.posX < 0):
+            self.posX = 0
+        if (self.posX > 9):
+            self.posX = 9
+        self.posY += moveY
+        if (self.posY < 0):
+            self.posY = 0
+        if (self.posY > 9):
+            self.posY = 9
+    # Obtenir la Position actuelle
+    def getPos(self):
+        return (self.posX, self.posY)
 
 class Grille :
     TAS_X, TAS_Y = 10, 10
@@ -41,10 +68,28 @@ if (choix_de_jouer == b'o'):
     game_over = False
     _ = os.system('cls')
     
+docteur = Player(0, 0, 4, 0, 0)
 
 while not game_over:
     # Déroulement du jeu
-    print("skibidi")
-    game_over = True
+    _ = os.system('cls')
+    
+    Grille.grille[docteur.posX][docteur.posY] = Grille.JOUEUR
+    
+    affichage()
+
+    playerInput = getch()    
+
+    if (playerInput == b'w'):
+        docteur.move(0,1)
+    elif (playerInput == b's'):
+        docteur.move(0,-1)
+    elif (playerInput == b'a'):
+        docteur.move(-1,0)
+    elif (playerInput == b'd'):
+        docteur.move(1,0)
+    elif (playerInput == b'o'):
+        game_over = True
+    
 
 
