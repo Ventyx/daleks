@@ -98,7 +98,8 @@ class Dalek :
             self.posX += 1
         elif (self.posX > docX):
             self.posX -= 1
-
+        
+        # si le dalek est mort, devient tas ferraille
         if (self.vivant == False):
             Grille.grille[self.posY][self.posX] = Grille.FERRAILLE
 
@@ -123,12 +124,11 @@ def grilleAffichage(grilleDuJeu) :
 def uiAffichage():
     print(f"\n {WHITE}UTILISER W,A,S,D POUR SE DÉPLACER    |    Q = Zappeur    |    E = Téléportation    |    O = Arrêter de jouer")
     print("\n\n")
-    print(f"{RED}Daleks restants : " + str(daleks.__len__()))
+    print(f"{RED}Daleks restants : " + str(daleks.count))
     print(f"{CYAN}Téléporteurs utilisables : " + str(docteur.teleporteur))
     print(f"{YELLOW}Zappeurs utilisables : " + str(docteur.zappeur))
     print(f"{WHITE}Score : " + str(Score))
 
-# Trouver case vide dans la grille
 def findEmptyCase(grilleDuJeu):
     isEmpty = False
     while not isEmpty :
@@ -142,7 +142,7 @@ def findEmptyCase(grilleDuJeu):
 MAX_DALEKS = 5
 MAX_ZAPPERS = 3
 MAX_TELEPORTERS = 2
-zappeurs = 5
+zappeurs = random.randint(0, MAX_ZAPPERS)
 teleporteurs = random.randint(0, MAX_TELEPORTERS)
 Score = 0
 daleks = []
@@ -167,11 +167,6 @@ while jouer :
     # Création d'un objet joueur nommé docteur
     docteur = Player(random.randint(1, 9), random.randint(1, 9), 1, 0)
 
-    # création des daleks
-    for d in range(MAX_DALEKS):
-        x, y = findEmptyCase(Grille.grille)
-        daleks.append(Dalek(x,y))
-
     # Spawn des objets
     for z in range(zappeurs):
         x, y = findEmptyCase(Grille.grille)
@@ -185,6 +180,12 @@ while jouer :
     while not game_over:
         _ = os.system('cls')
         
+        # création des daleks si la liste est vide
+        if (len(daleks) == 0):
+            for d in range(MAX_DALEKS):
+                x, y = findEmptyCase(Grille.grille)
+                daleks.append(Dalek(x,y))
+
         # Affichage position Joueur et Daleks
         Grille.grille[docteur.posY][docteur.posX] = Grille.JOUEUR
 
@@ -208,13 +209,15 @@ while jouer :
             docteur.move(-1,0)
         elif (playerInput == b'd'):
             docteur.move(1,0)
+        elif (playerInput == b'o'): #Recommence le jeu
+            game_over = True
         elif (playerInput == b'e'): #Téléportation
             if (docteur.teleporteur > 0):
                 x, y = findEmptyCase(Grille.grille)
                 docteur.move(x, y)
                 docteur.teleporteur -= 1
         elif (playerInput == b'q'):
-            if (docteur.zappeur > 0):
+            if (docteur.zappeur > 0): #Zappeurs
                 for i in range(daleks.__len__()):
                     if (docteur.posX + 1 == daleks[i].posX):
                         daleks[i].vivant = False
@@ -225,7 +228,7 @@ while jouer :
                     if (docteur.posY - 1 == daleks[i].posY):
                         daleks[i].vivant = False
                 docteur.zappeur -= 1
-
+        
         # Ajout des objets dans l'inventaire du joueur
         if (Grille.grille[docteur.posY][docteur.posX] == Grille.ZAP):
             docteur.zappeur += 1
@@ -241,6 +244,10 @@ while jouer :
                 sleep(2)
                 _ = os.system('cls')
                 game_over = True
+                if (game_over):
+                        daleks.clear()
+                break
+            # vérifie si le dalek[i] fait une collision avec un dalek vivant
             for d in daleks:
                 # pour éviter collision avec lui-même ou si le dalek dans la liste est mort, continue
                 if (d == daleks[i] or not d.vivant):
