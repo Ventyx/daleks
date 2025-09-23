@@ -98,7 +98,8 @@ class Dalek :
             self.posX += 1
         elif (self.posX > docX):
             self.posX -= 1
-
+        
+        # si le dalek est mort, devient tas ferraille
         if (self.vivant == False):
             Grille.grille[self.posY][self.posX] = Grille.FERRAILLE
 
@@ -166,11 +167,6 @@ while jouer :
     # Création d'un objet joueur nommé docteur
     docteur = Player(random.randint(1, 9), random.randint(1, 9), 1, 0)
 
-    # création des daleks
-    for d in range(MAX_DALEKS):
-        x, y = findEmptyCase(Grille.grille)
-        daleks.append(Dalek(x,y))
-
     # Spawn des objets
     for z in range(zappeurs):
         x, y = findEmptyCase(Grille.grille)
@@ -184,6 +180,12 @@ while jouer :
     while not game_over:
         _ = os.system('cls')
         
+        # création des daleks si la liste est vide
+        if (len(daleks) == 0):
+            for d in range(MAX_DALEKS):
+                x, y = findEmptyCase(Grille.grille)
+                daleks.append(Dalek(x,y))
+
         # Affichage position Joueur et Daleks
         Grille.grille[docteur.posY][docteur.posX] = Grille.JOUEUR
 
@@ -225,6 +227,10 @@ while jouer :
                 sleep(2)
                 _ = os.system('cls')
                 game_over = True
+                if (game_over):
+                        daleks.clear()
+                break
+            # verifie si le dalek[i] fait une collision avec un dalek vivant
             for d in daleks:
                 # pour éviter collision avec lui-même ou si le dalek dans la liste est mort, continue
                 if (d == daleks[i] or not d.vivant):
