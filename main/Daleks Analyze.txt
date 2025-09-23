@@ -1,0 +1,14 @@
+- Grille
+- Docteur / Joueur (Bouger, Téléporteur, Bombe)
+- Daleks -> tas de ferraille
+
+- UI (Légende, Couleurs différentes selon case, Score)
+
+espace vide       = 
+dalek             = 
+tas de ferraille  =
+Joueur            = 
+objet téléporteur = 
+objet bombe       = 
+
+https://www.isaacsukin.com/sites/daleks/index.html
