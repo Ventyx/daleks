@@ -124,12 +124,11 @@ def grilleAffichage(grilleDuJeu) :
 def uiAffichage():
     print(f"\n {WHITE}UTILISER W,A,S,D POUR SE DÉPLACER    |    Q = Zappeur    |    E = Téléportation    |    O = Arrêter de jouer")
     print("\n\n")
-    print(f"{RED}Daleks restants : " + str(daleks.__len__()))
+    print(f"{RED}Daleks restants : " + str(daleks.count))
     print(f"{CYAN}Téléporteurs utilisables : " + str(docteur.teleporteur))
     print(f"{YELLOW}Zappeurs utilisables : " + str(docteur.zappeur))
     print(f"{WHITE}Score : " + str(Score))
 
-# Trouver case vide dans la grille
 def findEmptyCase(grilleDuJeu):
     isEmpty = False
     while not isEmpty :
@@ -210,13 +209,15 @@ while jouer :
             docteur.move(-1,0)
         elif (playerInput == b'd'):
             docteur.move(1,0)
+        elif (playerInput == b'o'): #Recommence le jeu
+            game_over = True
         elif (playerInput == b'e'): #Téléportation
             if (docteur.teleporteur > 0):
                 x, y = findEmptyCase(Grille.grille)
                 docteur.move(x, y)
                 docteur.teleporteur -= 1
         elif (playerInput == b'q'):
-            if (docteur.zappeur > 0):
+            if (docteur.zappeur > 0): #Zappeurs
                 for i in range(daleks.__len__()):
                     if (docteur.posX + 1 == daleks[i].posX):
                         daleks[i].vivant = False
