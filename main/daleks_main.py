@@ -143,7 +143,7 @@ def findEmptyCase(grilleDuJeu):
 MAX_DALEKS = 5
 MAX_ZAPPERS = 3
 MAX_TELEPORTERS = 2
-zappeurs = 5
+zappeurs = random.randint(0, MAX_ZAPPERS)
 teleporteurs = random.randint(0, MAX_TELEPORTERS)
 Score = 0
 daleks = []
@@ -227,6 +227,8 @@ while jouer :
                     if (docteur.posY - 1 == daleks[i].posY):
                         daleks[i].vivant = False
                 docteur.zappeur -= 1
+        elif (playerInput == b'o'):
+            game_over = True
 
         # Ajout des objets dans l'inventaire du joueur
         if (Grille.grille[docteur.posY][docteur.posX] == Grille.ZAP):
