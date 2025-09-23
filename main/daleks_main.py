@@ -13,6 +13,18 @@ BROWN = "\033[0;33m"
 CYAN = "\033[0;36m"
 WHITE = "\033[0m"
 
+# Variables 
+MAX_DALEKS = 5
+MAX_ZAPPERS = 3
+MAX_TELEPORTERS = 2
+zappeurs = random.randint(0, MAX_ZAPPERS)
+teleporteurs = random.randint(0, MAX_TELEPORTERS)
+Score = 0
+daleks = []
+nbDaleksVivants = MAX_DALEKS
+game_over = True
+jouer = True
+
 class Grille :
     # longueur et largeur MAX de la grille 
     TAS_X, TAS_Y = 10, 10
@@ -111,6 +123,7 @@ def verCollision(dalek, autreDalek):
             Grille.grille[autreDalek.posY][autreDalek.posX] = Grille.FERRAILLE
             dalek.vivant = False
             autreDalek.vivant = False
+            nbDaleksVivants -= 2
             return True
          
 # affichage de la grille (y = rangée, x = colonne)
@@ -124,7 +137,7 @@ def grilleAffichage(grilleDuJeu) :
 def uiAffichage():
     print(f"\n {WHITE}UTILISER W,A,S,D POUR SE DÉPLACER    |    Q = Zappeur    |    E = Téléportation    |    O = Arrêter de jouer")
     print("\n\n")
-    print(f"{RED}Daleks restants : " + str(daleks.count))
+    print(f"{RED}Daleks restants : " + str(nbDaleksVivants))
     print(f"{CYAN}Téléporteurs utilisables : " + str(docteur.teleporteur))
     print(f"{YELLOW}Zappeurs utilisables : " + str(docteur.zappeur))
     print(f"{WHITE}Score : " + str(Score))
@@ -138,16 +151,7 @@ def findEmptyCase(grilleDuJeu):
             isEmpty = True
     return x, y
 
-# Variables 
-MAX_DALEKS = 5
-MAX_ZAPPERS = 3
-MAX_TELEPORTERS = 2
-zappeurs = random.randint(0, MAX_ZAPPERS)
-teleporteurs = random.randint(0, MAX_TELEPORTERS)
-Score = 0
-daleks = []
-game_over = True
-jouer = True
+
 
 # Menu principal
 while jouer :
@@ -219,14 +223,14 @@ while jouer :
         elif (playerInput == b'q'):
             if (docteur.zappeur > 0): #Zappeurs
                 for i in range(daleks.__len__()):
-                    if (docteur.posX + 1 == daleks[i].posX):
+                    if (docteur.posX + 1 == daleks[i].posX or 
+                        (docteur.posX - 1 == daleks[i].posX) or 
+                        (docteur.posY + 1 == daleks[i].posY) or 
+                        (docteur.posY - 1 == daleks[i].posY)):
+
                         daleks[i].vivant = False
-                    if (docteur.posX - 1 == daleks[i].posX):
-                        daleks[i].vivant = False
-                    if (docteur.posY + 1 == daleks[i].posY):
-                        daleks[i].vivant = False
-                    if (docteur.posY - 1 == daleks[i].posY):
-                        daleks[i].vivant = False
+                        nbDaleksVivants -= 1
+                    
                 docteur.zappeur -= 1
         elif (playerInput == b'o'):
             game_over = True
@@ -246,9 +250,7 @@ while jouer :
                 sleep(2)
                 _ = os.system('cls')
                 game_over = True
-                if (game_over):
-                        daleks.clear()
-                break
+                daleks.clear()
             # verifie si le dalek[i] fait une collision avec un dalek vivant
             for d in daleks:
                 # pour éviter collision avec lui-même ou si le dalek dans la liste est mort, continue
@@ -256,3 +258,10 @@ while jouer :
                     continue
                 if (verCollision(daleks[i], d)):
                     Score += 10
+        if (nbDaleksVivants == 0):
+            _ = os.system('cls')
+            print(f"{GREEN}YOU WON !{WHITE}")
+            sleep(2)
+            _ = os.system('cls')
+            game_over = True
+            daleks.clear()
