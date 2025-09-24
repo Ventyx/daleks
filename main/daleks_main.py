@@ -151,7 +151,7 @@ def findEmptyCase(grilleDuJeu):
     while not isEmpty :
         x = random.randint(0, 9)
         y = random.randint(0, 9)
-        if (grilleDuJeu[x][y] == Grille.VIDE):
+        if (grilleDuJeu[y][x] == Grille.VIDE):
             isEmpty = True
     return x, y
 
@@ -182,7 +182,7 @@ while jouer :
     Grille.setGrilleEmpty()
 
     # Création d'un objet joueur nommé docteur
-    docteur = Player(random.randint(1, 9), random.randint(1, 9), 1, 0)
+    docteur = Player(random.randint(0, 9), random.randint(0, 9), 1, 0)
 
     # Spawn des objets
     for z in range(random.randint(0, MAX_ZAPPERS)):
@@ -213,7 +213,7 @@ while jouer :
 
         affichageComplet()
 
-        playerInput = getch()    
+        playerInput = getch()
 
         # Tour du Joueur
         if (playerInput == b'w'):
@@ -224,20 +224,21 @@ while jouer :
             docteur.move(-1,0)
         elif (playerInput == b'd'):
             docteur.move(1,0)
-        elif (playerInput == b'o'): #Recommence le jeu
+        elif (playerInput == b'o'): # Recommence le jeu
             game_over = True
-        elif (playerInput == b'e'): #Téléportation
+        elif (playerInput == b'e'): # Téléportation
             if (docteur.teleporteur > 0):
                 x, y = findEmptyCase(Grille.grille)
                 docteur.move(x, y)
                 docteur.teleporteur -= 1
+            continue
         elif (playerInput == b'q'):
             if (docteur.zappeur > 0): #Zappeurs
                 for i in range(daleks.__len__()):
-                    if (docteur.posX + 1 == daleks[i].posX or 
-                        (docteur.posX - 1 == daleks[i].posX) or 
-                        (docteur.posY + 1 == daleks[i].posY) or 
-                        (docteur.posY - 1 == daleks[i].posY)):
+                    if (((docteur.posX + 1 == daleks[i].posX) and (docteur.posY == daleks[i].posY)) or 
+                        ((docteur.posX - 1 == daleks[i].posX) and (docteur.posY == daleks[i].posY)) or 
+                        ((docteur.posX == daleks[i].posX) and (docteur.posY + 1 == daleks[i].posY)) or 
+                        ((docteur.posX == daleks[i].posX) and (docteur.posY - 1 == daleks[i].posY))):
 
                         daleks[i].vivant = False
                         nbDaleksMorts += 1
