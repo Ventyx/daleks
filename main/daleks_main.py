@@ -1,5 +1,5 @@
 #### Fichier Main
-from msvcrt import getch
+from msvcrt import getch, kbhit
 import os
 from msvcrt import getch
 import random
@@ -17,13 +17,12 @@ WHITE = "\033[0m"
 MAX_DALEKS = 5
 MAX_ZAPPERS = 3
 MAX_TELEPORTERS = 2
-zappeurs = random.randint(0, MAX_ZAPPERS)
-teleporteurs = random.randint(0, MAX_TELEPORTERS)
+
 Score = 0
 daleks = []
-nbDaleksVivants = MAX_DALEKS
 game_over = True
 jouer = True
+nbDaleksMorts = 0
 
 class Grille :
     # longueur et largeur MAX de la grille 
@@ -123,7 +122,6 @@ def verCollision(dalek, autreDalek):
             Grille.grille[autreDalek.posY][autreDalek.posX] = Grille.FERRAILLE
             dalek.vivant = False
             autreDalek.vivant = False
-            nbDaleksVivants -= 2
             return True
          
 # affichage de la grille (y = rangée, x = colonne)
@@ -137,10 +135,16 @@ def grilleAffichage(grilleDuJeu) :
 def uiAffichage():
     print(f"\n {WHITE}UTILISER W,A,S,D POUR SE DÉPLACER    |    Q = Zappeur    |    E = Téléportation    |    O = Arrêter de jouer")
     print("\n\n")
-    print(f"{RED}Daleks restants : " + str(nbDaleksVivants))
+    print(f"{RED}Daleks restants : " + str(MAX_DALEKS - nbDaleksMorts))
     print(f"{CYAN}Téléporteurs utilisables : " + str(docteur.teleporteur))
     print(f"{YELLOW}Zappeurs utilisables : " + str(docteur.zappeur))
     print(f"{WHITE}Score : " + str(Score))
+
+# Efface la console, puis affiche le ui et la grille
+def affichageComplet():
+    _ = os.system('cls')
+    grilleAffichage(Grille.grille)
+    uiAffichage()
 
 def findEmptyCase(grilleDuJeu):
     isEmpty = False
@@ -151,7 +155,16 @@ def findEmptyCase(grilleDuJeu):
             isEmpty = True
     return x, y
 
-
+def endTheGame(win):
+    _ = os.system('cls')
+    if (not win):
+        print(f"{RED}GAME OVER !{WHITE}")
+    if (win):
+        print(f"{GREEN}YOU WON !{WHITE}")
+    sleep(2)
+    _ = os.system('cls')
+    if (game_over):
+        daleks.clear()
 
 # Menu principal
 while jouer :
@@ -165,31 +178,30 @@ while jouer :
     elif (choix_de_jouer == b'n'):
         jouer = False
 
-    # Création d'une instance de Grille
+    # Vider la grille
     Grille.setGrilleEmpty()
 
     # Création d'un objet joueur nommé docteur
     docteur = Player(random.randint(1, 9), random.randint(1, 9), 1, 0)
 
     # Spawn des objets
-    for z in range(zappeurs):
+    for z in range(random.randint(0, MAX_ZAPPERS)):
         x, y = findEmptyCase(Grille.grille)
         Grille.grille[x][y] = Grille.ZAP
 
-    for t in range(teleporteurs):
+    for t in range(random.randint(0, MAX_TELEPORTERS)):
         x, y = findEmptyCase(Grille.grille)
         Grille.grille[x][y] = Grille.TELEPORTEUR
 
+    # création des daleks si la liste est vide
+    if (len(daleks) == 0):
+        for d in range(MAX_DALEKS):
+            x, y = findEmptyCase(Grille.grille)
+            daleks.append(Dalek(x,y))
+
     # Déroulement du jeu
     while not game_over:
-        _ = os.system('cls')
         
-        # création des daleks si la liste est vide
-        if (len(daleks) == 0):
-            for d in range(MAX_DALEKS):
-                x, y = findEmptyCase(Grille.grille)
-                daleks.append(Dalek(x,y))
-
         # Affichage position Joueur et Daleks
         Grille.grille[docteur.posY][docteur.posX] = Grille.JOUEUR
 
@@ -199,8 +211,7 @@ while jouer :
             elif (daleks[i].vivant == False):
                 Grille.grille[daleks[i].posY][daleks[i].posX] = Grille.FERRAILLE
 
-        grilleAffichage(Grille.grille)
-        uiAffichage()
+        affichageComplet()
 
         playerInput = getch()    
 
@@ -229,8 +240,7 @@ while jouer :
                         (docteur.posY - 1 == daleks[i].posY)):
 
                         daleks[i].vivant = False
-                        nbDaleksVivants -= 1
-                    
+                        nbDaleksMorts += 1
                 docteur.zappeur -= 1
         elif (playerInput == b'o'):
             game_over = True
@@ -240,17 +250,17 @@ while jouer :
             docteur.zappeur += 1
         if (Grille.grille[docteur.posY][docteur.posX] == Grille.TELEPORTEUR):
             docteur.teleporteur += 1
+        nbDaleksMorts = 0
+        
+        affichageComplet()
 
         # Tour des Daleks
         for i in range(MAX_DALEKS):
             daleks[i].chasse(docteur)
             if (daleks[i].posX == docteur.posX and daleks[i].posY == docteur.posY) :
-                _ = os.system('cls')
-                print(f"{RED}GAME OVER !{WHITE}")
-                sleep(2)
-                _ = os.system('cls')
                 game_over = True
-                daleks.clear()
+                endTheGame(False)
+                break
             # verifie si le dalek[i] fait une collision avec un dalek vivant
             for d in daleks:
                 # pour éviter collision avec lui-même ou si le dalek dans la liste est mort, continue
@@ -258,10 +268,11 @@ while jouer :
                     continue
                 if (verCollision(daleks[i], d)):
                     Score += 10
-        if (nbDaleksVivants == 0):
-            _ = os.system('cls')
-            print(f"{GREEN}YOU WON !{WHITE}")
-            sleep(2)
-            _ = os.system('cls')
+            if (not daleks[i].vivant):
+                nbDaleksMorts += 1
+
+        if (MAX_DALEKS - nbDaleksMorts == 0):
             game_over = True
-            daleks.clear()
+            endTheGame(True)
+        while (kbhit()):
+            getch()
