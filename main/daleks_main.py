@@ -23,6 +23,7 @@ daleks = []
 game_over = True
 jouer = True
 nbDaleksMorts = 0
+nbDaleksMortsAvant = 0
 
 class Grille :
     # longueur et largeur MAX de la grille 
@@ -160,6 +161,14 @@ def endTheGame(win):
     if (game_over):
         daleks.clear()
 
+# Retourne le score total si un ou plusieurs nouveaux daleks sont tués, sinon retourne le vieux score.
+def scoreTotal(daleksMortsAvant, daleksMorts, score):
+        if (daleksMortsAvant < nbDaleksMorts):
+            nbMortsDepuis = nbDaleksMorts - daleksMortsAvant
+            score += nbMortsDepuis * 10
+            nbDaleksMortsAvant = nbDaleksMorts
+        return score
+
 # Menu principal
 while jouer :
     print("Jeu du dalek! \n\n\n")
@@ -195,7 +204,6 @@ while jouer :
 
     # Déroulement du jeu
     while not game_over:
-        
         # Affichage position Joueur et Daleks
         Grille.grille[docteur.posY][docteur.posX] = Grille.JOUEUR
 
@@ -234,6 +242,7 @@ while jouer :
 
                         daleks[i].vivant = False
                         nbDaleksMorts += 1
+                        Score = scoreTotal(nbDaleksMortsAvant, nbDaleksMorts, Score)
                 docteur.zappeur -= 1
         elif (playerInput == b'o'):
             game_over = True
@@ -243,6 +252,7 @@ while jouer :
             docteur.zappeur += 1
         if (Grille.grille[docteur.posY][docteur.posX] == Grille.TELEPORTEUR):
             docteur.teleporteur += 1
+        nbDaleksMortsAvant = nbDaleksMorts
         nbDaleksMorts = 0
 
         # Tour des Daleks
@@ -261,11 +271,11 @@ while jouer :
                 if (daleks[i].posX == d.posX and daleks[i].posY == d.posY):
                     daleks[i].vivant = False
                     d.vivant = False
-                    Score += 10
             if (not daleks[i].vivant):
                 Grille.grille[daleks[i].posY][daleks[i].posX] = Grille.FERRAILLE
                 nbDaleksMorts += 1
-
+        Score = scoreTotal(nbDaleksMortsAvant, nbDaleksMorts, Score)
+        
         if (MAX_DALEKS - nbDaleksMorts == 0):
             game_over = True
             endTheGame(True)
