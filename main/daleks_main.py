@@ -9,7 +9,7 @@ from time import sleep
 RED = "\033[31m"
 GREEN = "\033[32m"
 YELLOW = "\033[1;33m"
-BROWN = "\033[0;33m"
+PINK = "\033[0;35m"
 CYAN = "\033[0;36m"
 WHITE = "\033[0m"
 
@@ -30,7 +30,7 @@ class Grille :
 
     VIDE = f"{WHITE}O"
     ZAP = f"{YELLOW}Z"
-    FERRAILLE = f"{BROWN}X"
+    FERRAILLE = f"{PINK}X"
     TELEPORTEUR = f"{CYAN}T"
     DALEK = f"{RED}D"
     JOUEUR = f"{GREEN}J"
@@ -113,16 +113,6 @@ class Dalek :
         # si le dalek est mort, devient tas ferraille
         if (self.vivant == False):
             Grille.grille[self.posY][self.posX] = Grille.FERRAILLE
-
-# verify collision entre daleks ou avec tas ferraille -> destruction + tas ferraille
-def verCollision(dalek, autreDalek):
-    if (autreDalek.vivant):
-        if (dalek.posX == autreDalek.posX and dalek.posY == autreDalek.posY):
-            Grille.grille[dalek.posY][dalek.posX] = Grille.FERRAILLE
-            Grille.grille[autreDalek.posY][autreDalek.posX] = Grille.FERRAILLE
-            dalek.vivant = False
-            autreDalek.vivant = False
-            return True
          
 # affichage de la grille (y = rangée, x = colonne)
 def grilleAffichage(grilleDuJeu) :
@@ -133,7 +123,9 @@ def grilleAffichage(grilleDuJeu) :
 
 # affichage du UI
 def uiAffichage():
-    print(f"\n {WHITE}UTILISER W,A,S,D POUR SE DÉPLACER    |    Q = Zappeur    |    E = Téléportation    |    O = Arrêter de jouer")
+    print(f"\n {WHITE}Controles : UTILISER W,A,S,D POUR SE DÉPLACER    |    Q = Utiliser Zappeur    |    E = Téléportation    |    O = Arrêter de jouer")
+    print(f"{WHITE}--------------------------------------------------------------------------------------------------------------------------------------")
+    print(f"{WHITE}Légende   : {RED}D{WHITE} -> Dalek    |    {YELLOW}Z{WHITE} -> Zappeur    |    {CYAN}T{WHITE} -> Téléporteur    |    {GREEN}J{WHITE} -> Joueur    |    O -> Case vide    |    {PINK}X{WHITE} -> Ferraille")
     print("\n\n")
     print(f"{RED}Daleks restants : " + str(MAX_DALEKS - nbDaleksMorts))
     print(f"{CYAN}Téléporteurs utilisables : " + str(docteur.teleporteur))
@@ -146,6 +138,7 @@ def affichageComplet():
     grilleAffichage(Grille.grille)
     uiAffichage()
 
+# Trouve une case vide dans la grille
 def findEmptyCase(grilleDuJeu):
     isEmpty = False
     while not isEmpty :
@@ -155,12 +148,13 @@ def findEmptyCase(grilleDuJeu):
             isEmpty = True
     return x, y
 
+# Appelée lors de la fin de la partie, argument win en true si la partie est  gagnée.
 def endTheGame(win):
     _ = os.system('cls')
     if (not win):
-        print(f"{RED}GAME OVER !{WHITE}")
-    if (win):
-        print(f"{GREEN}YOU WON !{WHITE}")
+        print(f"{RED}VOUS AVEZ PERDU !{WHITE}")
+    else:
+        print(f"{GREEN}VOUS AVEZ GAGNÉ !{WHITE}")
     sleep(2)
     _ = os.system('cls')
     if (game_over):
@@ -170,19 +164,19 @@ def endTheGame(win):
 while jouer :
     print("Jeu du dalek! \n\n\n")
     print("Voulez vous Jouer ? (o/n)")
-    choix_de_jouer = getch()
-
+    choix_de_jouer = getch().lower()
     if (choix_de_jouer == b'o'):
         game_over = False
-        _ = os.system('cls')
     elif (choix_de_jouer == b'n'):
         jouer = False
+    _ = os.system('cls')
 
     # Vider la grille
     Grille.setGrilleEmpty()
 
     # Création d'un objet joueur nommé docteur
     docteur = Player(random.randint(0, 9), random.randint(0, 9), 1, 0)
+    Grille.grille[docteur.posY][docteur.posX] = Grille.JOUEUR
 
     # Spawn des objets
     for z in range(random.randint(0, MAX_ZAPPERS)):
@@ -208,13 +202,11 @@ while jouer :
         for i in range(MAX_DALEKS):
             if (daleks[i].vivant):
                 Grille.grille[daleks[i].posY][daleks[i].posX] = Grille.DALEK
-            elif (daleks[i].vivant == False):
-                Grille.grille[daleks[i].posY][daleks[i].posX] = Grille.FERRAILLE
 
         affichageComplet()
 
-        playerInput = getch()
-
+        playerInput = getch().lower()
+        
         # Tour du Joueur
         if (playerInput == b'w'):
             docteur.move(0,1)
@@ -252,24 +244,26 @@ while jouer :
         if (Grille.grille[docteur.posY][docteur.posX] == Grille.TELEPORTEUR):
             docteur.teleporteur += 1
         nbDaleksMorts = 0
-        
-        affichageComplet()
 
         # Tour des Daleks
         for i in range(MAX_DALEKS):
             daleks[i].chasse(docteur)
+            # Quand un dalek entre en collision avec le joueur, Fin de la partie
             if (daleks[i].posX == docteur.posX and daleks[i].posY == docteur.posY) :
                 game_over = True
                 endTheGame(False)
                 break
-            # verifie si le dalek[i] fait une collision avec un dalek vivant
+            # Verifie si le dalek[i] entre en collision avec un dalek vivant
             for d in daleks:
                 # pour éviter collision avec lui-même ou si le dalek dans la liste est mort, continue
-                if (d == daleks[i] or not d.vivant):
+                if (d == daleks[i]):
                     continue
-                if (verCollision(daleks[i], d)):
+                if (daleks[i].posX == d.posX and daleks[i].posY == d.posY):
+                    daleks[i].vivant = False
+                    d.vivant = False
                     Score += 10
             if (not daleks[i].vivant):
+                Grille.grille[daleks[i].posY][daleks[i].posX] = Grille.FERRAILLE
                 nbDaleksMorts += 1
 
         if (MAX_DALEKS - nbDaleksMorts == 0):
