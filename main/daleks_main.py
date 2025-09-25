@@ -163,8 +163,8 @@ def endTheGame(win):
 
 # Retourne le score total si un ou plusieurs nouveaux daleks sont tués, sinon retourne le vieux score.
 def scoreTotal(daleksMortsAvant, daleksMorts, score):
-        if (daleksMortsAvant < nbDaleksMorts):
-            nbMortsDepuis = nbDaleksMorts - daleksMortsAvant
+        if (daleksMortsAvant < daleksMorts):
+            nbMortsDepuis = daleksMorts - daleksMortsAvant
             score += nbMortsDepuis * 10
             nbDaleksMortsAvant = nbDaleksMorts
         return score
@@ -242,8 +242,8 @@ while jouer :
 
                         daleks[i].vivant = False
                         nbDaleksMorts += 1
-                        Score = scoreTotal(nbDaleksMortsAvant, nbDaleksMorts, Score)
                 docteur.zappeur -= 1
+                Score = scoreTotal(nbDaleksMortsAvant, nbDaleksMorts, Score)
         elif (playerInput == b'o'):
             game_over = True
 
@@ -274,10 +274,11 @@ while jouer :
             if (not daleks[i].vivant):
                 Grille.grille[daleks[i].posY][daleks[i].posX] = Grille.FERRAILLE
                 nbDaleksMorts += 1
-        Score = scoreTotal(nbDaleksMortsAvant, nbDaleksMorts, Score)
         
         if (MAX_DALEKS - nbDaleksMorts == 0):
             game_over = True
             endTheGame(True)
         while (kbhit()):
             getch()
+            
+        Score = scoreTotal(nbDaleksMortsAvant, nbDaleksMorts, Score)
